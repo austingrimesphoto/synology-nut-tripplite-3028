@@ -2,6 +2,8 @@ name: release artifact
 on:
   push:
     tags: ['v*']
+    branches: [main]
+    paths: ['.github/release-trigger']
 permissions:
   contents: write
 jobs:
@@ -9,19 +11,45 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Resolve release tag
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            TAG="$GITHUB_REF_NAME"
+          else
+            TAG="v$(tr -d '[:space:]' < VERSION)"
+            if ! git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git tag -a "$TAG" -m "Release $TAG"
+              git push origin "$TAG"
+            fi
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
       - run: ./scripts/build-driver.sh
       - name: Package ready-to-install bundle
+        shell: bash
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
         run: |
+          set -euo pipefail
           mkdir -p dist/synology-nut-tripplite-3028
           rsync -a --exclude .git --exclude dist ./ dist/synology-nut-tripplite-3028/
-          tar -C dist -czf "synology-nut-tripplite-3028-${GITHUB_REF_NAME}.tar.gz" synology-nut-tripplite-3028
+          tar -C dist -czf "synology-nut-tripplite-3028-${TAG}.tar.gz" synology-nut-tripplite-3028
           tar -C artifacts -czf nut-2.8.5-tripplite-3028-x86_64.tar.gz nut-2.8.5-3028
-          sha256sum "synology-nut-tripplite-3028-${GITHUB_REF_NAME}.tar.gz" nut-2.8.5-tripplite-3028-x86_64.tar.gz > SHA256SUMS
+          sha256sum "synology-nut-tripplite-3028-${TAG}.tar.gz" nut-2.8.5-tripplite-3028-x86_64.tar.gz > SHA256SUMS
       - name: Release
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
         run: |
-          gh release create "$GITHUB_REF_NAME" --generate-notes \
-            "synology-nut-tripplite-3028-${GITHUB_REF_NAME}.tar.gz" \
+          set -euo pipefail
+          gh release create "$TAG" --generate-notes \
+            "synology-nut-tripplite-3028-${TAG}.tar.gz" \
             nut-2.8.5-tripplite-3028-x86_64.tar.gz \
             SHA256SUMS
