@@ -1,0 +1,38 @@
+name: Bug report
+description: Report a problem with the Synology compatibility layer
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: "Do not include passwords, SSH keys, or UPS serial numbers."
+  - type: input
+    id: nas
+    attributes:
+      label: NAS model
+    validations:
+      required: true
+  - type: input
+    id: dsm
+    attributes:
+      label: DSM version/build
+    validations:
+      required: true
+  - type: input
+    id: ups
+    attributes:
+      label: UPS model
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: "What happened?"
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Redacted diagnostics
+      description: "Output from collect-diagnostics.sh; remove anything you do not want public."

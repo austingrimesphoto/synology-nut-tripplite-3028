@@ -1,0 +1,13 @@
+[Unit]
+Description=Synology UPS native compatibility guard for Tripp Lite 09ae:3028
+After=local-fs.target
+Before=ups-usb.service
+RequiresMountsFor=/volume1/ups-native
+
+[Service]
+Type=oneshot
+ExecStart=/volume1/ups-native/scripts/compat.sh --boot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

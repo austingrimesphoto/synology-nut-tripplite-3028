@@ -1,0 +1,13 @@
+name: shellcheck
+on: [push, pull_request]
+permissions: {contents: read}
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - run: bash -n scripts/build-driver.sh scripts/bootstrap-github.sh scripts/prepare-upstream-pr.sh
+      - run: sh -n install.sh uninstall.sh scripts/common.sh scripts/compat.sh scripts/healthcheck.sh scripts/rollback.sh scripts/collect-diagnostics.sh rc.d/ups-native-compat.sh tests/test-config.sh
+      - run: shellcheck -S error -e SC1091 install.sh uninstall.sh scripts/*.sh rc.d/ups-native-compat.sh tests/test-config.sh
+      - run: ./tests/test-config.sh

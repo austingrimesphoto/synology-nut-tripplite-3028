@@ -1,0 +1,27 @@
+name: release artifact
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/build-driver.sh
+      - name: Package ready-to-install bundle
+        run: |
+          mkdir -p dist/synology-nut-tripplite-3028
+          rsync -a --exclude .git --exclude dist ./ dist/synology-nut-tripplite-3028/
+          tar -C dist -czf "synology-nut-tripplite-3028-${GITHUB_REF_NAME}.tar.gz" synology-nut-tripplite-3028
+          tar -C artifacts -czf nut-2.8.5-tripplite-3028-x86_64.tar.gz nut-2.8.5-3028
+          sha256sum "synology-nut-tripplite-3028-${GITHUB_REF_NAME}.tar.gz" nut-2.8.5-tripplite-3028-x86_64.tar.gz > SHA256SUMS
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --generate-notes \
+            "synology-nut-tripplite-3028-${GITHUB_REF_NAME}.tar.gz" \
+            nut-2.8.5-tripplite-3028-x86_64.tar.gz \
+            SHA256SUMS

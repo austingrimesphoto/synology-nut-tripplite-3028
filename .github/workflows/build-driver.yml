@@ -1,0 +1,19 @@
+name: build private driver
+on:
+  push:
+    paths: ['build/**', 'patches/**', 'scripts/build-driver.sh', '.github/workflows/build-driver.yml']
+  pull_request:
+    paths: ['build/**', 'patches/**', 'scripts/build-driver.sh', '.github/workflows/build-driver.yml']
+  workflow_dispatch:
+permissions: {contents: read}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/build-driver.sh
+      - run: cat artifacts/nut-2.8.5-3028/BUILD-INFO && cat artifacts/nut-2.8.5-3028/SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nut-2.8.5-tripplite-3028-x86_64
+          path: artifacts/nut-2.8.5-3028

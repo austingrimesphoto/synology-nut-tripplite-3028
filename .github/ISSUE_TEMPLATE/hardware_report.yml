@@ -1,0 +1,51 @@
+name: Hardware validation report
+description: Report a tested NAS/UPS combination
+title: "[hardware] "
+labels:
+  - hardware-validation
+body:
+  - type: input
+    id: nas
+    attributes:
+      label: NAS model
+    validations:
+      required: true
+  - type: input
+    id: dsm
+    attributes:
+      label: DSM version/build
+    validations:
+      required: true
+  - type: input
+    id: ups
+    attributes:
+      label: UPS model and revision if known
+    validations:
+      required: true
+  - type: input
+    id: usb
+    attributes:
+      label: USB VID:PID
+      description: "Example: 09ae:3028"
+    validations:
+      required: true
+  - type: textarea
+    id: telemetry
+    attributes:
+      label: Redacted online telemetry
+      description: "Do not include UPS serial numbers."
+    validations:
+      required: true
+  - type: dropdown
+    id: power_test
+    attributes:
+      label: Controlled OL -> OB -> OL test completed?
+      options:
+        - "Yes"
+        - "No"
+    validations:
+      required: true
+  - type: textarea
+    id: notifications
+    attributes:
+      label: DSM notification behavior
