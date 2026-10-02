@@ -7,7 +7,7 @@ DOCKER="${DOCKER:-docker}"
 if ! command -v "$DOCKER" >/dev/null 2>&1; then if [[ -x /usr/local/bin/docker ]]; then DOCKER=/usr/local/bin/docker; else echo "ERROR: Docker is required for the auditable containerized build." >&2; exit 1; fi; fi
 rm -rf "$OUT"; mkdir -p "$OUT"
 "$DOCKER" build --pull=false --no-cache -f "$ROOT/build/Dockerfile" -t "$IMAGE" "$ROOT"
-cid="$($DOCKER create "$IMAGE")"
+cid="$($DOCKER create --entrypoint /bin/usbhid-ups "$IMAGE" -V)"
 trap '"$DOCKER" rm -f "$cid" >/dev/null 2>&1 || true' EXIT
 "$DOCKER" cp "$cid:/bin" "$OUT/bin"
 "$DOCKER" cp "$cid:/lib" "$OUT/lib"
